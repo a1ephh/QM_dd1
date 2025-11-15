@@ -296,3 +296,22 @@ vector<int> Implicant::remainingMintermsAfterEPIs(const vector<Implicant>& prime
             remain.push_back(m);
     return remain;
 }
+
+std::string Implicant::patternToBoolean(const std::string& pattern) {
+    // checking if the pattern contains *any* '0' or '1'
+    if (std::all_of(pattern.begin(), pattern.end(), [](char c){ return c == '-'; })) {
+        return "1"; // hardcode the result for the universal term (test3)
+    }
+    std::stringstream ss;
+    char var = 'A';
+    for (char c : pattern) {
+        if (c == '0') {
+            ss << var << "'";
+        } else if (c == '1') {
+            ss << var;
+        }
+        // '-' is ignored
+        var++;
+    }
+    return ss.str();
+}

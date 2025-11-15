@@ -14,11 +14,16 @@
 #include <algorithm>
 #include <limits>
 #include <unordered_set>
+#include <set>
 #include <unordered_map>
 
 #include "Implicant.h"
 
+using ProductTerm = std::set<int>;
+using BooleanExpression = std::vector<ProductTerm>;
+
 using namespace std;
+class Implicant; // to fix the forward declaration error
 // class for any file manipulations such as parsing
 class FileManip {
 public:
@@ -26,6 +31,8 @@ public:
 
     static string toBinary(int num, int bits);
     static int doQMmin();
+    static void printMinimizedFunction(const std::vector<Implicant>& primes,const std::vector<int>& essential,const std::vector<ProductTerm>& minimalSolutions
+);
 };
 
 

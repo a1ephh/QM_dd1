@@ -54,6 +54,7 @@ public:
 
     static vector<int> remainingMintermsAfterEPIs(const vector<Implicant>& primes,const vector<int>& essential, const vector<int>& minterms);
 
+    static string patternToBoolean(const std::string& pattern);
 
 };
 

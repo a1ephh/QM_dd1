@@ -4,7 +4,8 @@
 
 #include "FileManip.h"
 
-using namespace std;
+#include "PItable.h"
+
 
 //Function 1: parseTerms
 
@@ -145,5 +146,54 @@ using namespace std;
         if (i+1<remain.size()) cout << ",";
     }
     cout << "}\n";
+     std::vector<ProductTerm> minimizedSolutions = PItable::solvePIMatrixAndMinimize(primeImplicants,essential,remain);
+      printMinimizedFunction(primeImplicants, essential, minimizedSolutions);
     return 0;
 }
+
+void FileManip::printMinimizedFunction(
+    const std::vector<Implicant>& primes,
+    const std::vector<int>& essential,
+    const std::vector<ProductTerm>& minimalSolutions
+) {
+     if (minimalSolutions.empty() && !essential.empty()) {
+         // in the case where only EPIs are needed (test3)
+         std::cout << "\nMinimized Boolean Function (1 Solution, only EPIs):\n";
+         std::string finalFunc = "";
+         for (int idx : essential) {
+             finalFunc += Implicant::patternToBoolean(primes[idx].pattern);
+             finalFunc += " + ";
+         }
+         // remoivng trailing +s
+         if (!finalFunc.empty()) {
+             finalFunc.resize(finalFunc.size() - 3);
+         }
+         std::cout << "  F = " << finalFunc << "\n";
+         return;
+     }
+
+     std::cout << "\nMinimized Boolean Function (" << minimalSolutions.size() << " Solution(s)):\n";
+
+     for (size_t s = 0; s < minimalSolutions.size(); ++s) {
+         std::string finalFunc = "";
+
+         // 1. Add Essential PIs
+         for (int idx : essential) {
+             finalFunc += Implicant::patternToBoolean(primes[idx].pattern);
+             finalFunc += " + ";
+         }
+
+         // 2. adding the selected non essential PIs
+         for (int idx : minimalSolutions[s]) {
+             finalFunc += Implicant::patternToBoolean(primes[idx].pattern);
+             finalFunc += " + ";
+         }
+
+         // cleaning up trailing +s
+         if (!finalFunc.empty()) {
+             finalFunc.resize(finalFunc.size() - 3);
+         }
+
+         std::cout << "  Solution " << s + 1 << ": F = " << finalFunc << "\n";
+     }
+ }
