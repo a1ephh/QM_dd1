@@ -92,7 +92,7 @@
     cout << "Enter test case (we have 5 tests and they follow this pattern: test1): ";
     cin >> testName;
 //get the test file
-    string filePath = "../" + testName + ".txt";
+    string filePath = "../testcases/" + testName + ".txt";
     if (!__fs::filesystem::exists(filePath)) {
         cerr << "Error: file not found: " << filePath << endl;
         return 1;
@@ -147,53 +147,94 @@
     }
     cout << "}\n";
      std::vector<ProductTerm> minimizedSolutions = PItable::solvePIMatrixAndMinimize(primeImplicants,essential,remain);
-      printMinimizedFunction(primeImplicants, essential, minimizedSolutions);
+      printMinimizedFunction(primeImplicants, essential, minimizedSolutions, n);
     return 0;
 }
+
+// Inside FileManip.cpp, for the function FileManip::printMinimizedFunction:
 
 void FileManip::printMinimizedFunction(
     const std::vector<Implicant>& primes,
     const std::vector<int>& essential,
-    const std::vector<ProductTerm>& minimalSolutions
+    const std::vector<ProductTerm>& minimalSolutions, int nbVars
 ) {
-     if (minimalSolutions.empty() && !essential.empty()) {
-         // in the case where only EPIs are needed (test3)
-         std::cout << "\nMinimized Boolean Function (1 Solution, only EPIs):\n";
-         std::string finalFunc = "";
-         for (int idx : essential) {
-             finalFunc += Implicant::patternToBoolean(primes[idx].pattern);
-             finalFunc += " + ";
-         }
-         // remoivng trailing +s
-         if (!finalFunc.empty()) {
-             finalFunc.resize(finalFunc.size() - 3);
-         }
-         std::cout << "  F = " << finalFunc << "\n";
-         return;
-     }
+    using namespace std;
+    std::string selectedFunc = "";
 
-     std::cout << "\nMinimized Boolean Function (" << minimalSolutions.size() << " Solution(s)):\n";
+    // case1 only epis
+    if (minimalSolutions.empty() && !essential.empty()) {
+        std::cout << endl << "Minimized Boolean Function (1 Solution, only EPIs):" << endl;
 
-     for (size_t s = 0; s < minimalSolutions.size(); ++s) {
-         std::string finalFunc = "";
+        for (int idx : essential) {
+            selectedFunc += Implicant::patternToBoolean(primes[idx].pattern);
+            selectedFunc += " + ";
+        }
+        // removing trailing +s
+        if (selectedFunc.size() > 3) {
+            selectedFunc.resize(selectedFunc.size() - 3);
+        }
+        std::cout << "  F = " << selectedFunc << endl;
 
-         // 1. Add Essential PIs
-         for (int idx : essential) {
-             finalFunc += Implicant::patternToBoolean(primes[idx].pattern);
-             finalFunc += " + ";
-         }
+    }
 
-         // 2. adding the selected non essential PIs
-         for (int idx : minimalSolutions[s]) {
-             finalFunc += Implicant::patternToBoolean(primes[idx].pattern);
-             finalFunc += " + ";
-         }
+    // cas2 petricks method solutions
+    else {
+        std::vector<std::string> allSolutions;
 
-         // cleaning up trailing +s
-         if (!finalFunc.empty()) {
-             finalFunc.resize(finalFunc.size() - 3);
-         }
+        // Print and store all solutions
+        std::cout << endl << "Minimized Boolean Function (" << minimalSolutions.size() << " Solution(s)):" << endl;
+        for (size_t s = 0; s < minimalSolutions.size(); ++s) {
+            std::string currentFunc = "";
 
-         std::cout << "  Solution " << s + 1 << ": F = " << finalFunc << "\n";
-     }
- }
+            // 1. Add Essential PIs
+            for (int idx : essential) {
+                currentFunc += Implicant::patternToBoolean(primes[idx].pattern);
+                currentFunc += " + ";
+            }
+
+            // 2. adding the selected non essential PIs
+            for (int idx : minimalSolutions[s]) {
+                currentFunc += Implicant::patternToBoolean(primes[idx].pattern);
+                currentFunc += " + ";
+            }
+
+            // cleaning up trailing +s
+            if (currentFunc.size() > 3) {
+                currentFunc.resize(currentFunc.size() - 3);
+            }
+
+            allSolutions.push_back(currentFunc); // storing the generated string
+            std::cout << "  Solution " << s + 1 << ": F = " << currentFunc << "\n";
+        }
+
+
+        cout << endl << "Would you like to convert to Verilog code? (Insert 1 for yes): ";
+        int choice;
+        cin >> choice;
+
+        if (choice == 1) {
+
+            cout << endl << "Which of the boolean functions would you like to implement? (Enter a number from 1 to " << allSolutions.size() << "): ";
+            int solution_index;
+            cin >> solution_index;
+
+            // Validate choice
+            if (solution_index >= 1 && solution_index <= (int)allSolutions.size()) {
+                selectedFunc = allSolutions[solution_index - 1];
+            } else {
+                std::cerr << "\nInvalid choice. Skipping Verilog generation." << std::endl;
+                return;
+            }
+        } else {
+            return;
+        }
+    } // end of 2nd case
+
+    if (!selectedFunc.empty()) {
+        cout << endl << "Insert the name for the Verilog module: ";
+        string moduleName;
+        cin >> moduleName;
+        VerilogConverter::generateVerilogModule(moduleName, selectedFunc, nbVars, moduleName+".txt");
+    }
+    return;
+}

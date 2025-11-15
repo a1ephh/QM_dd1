@@ -18,6 +18,7 @@
 #include <unordered_map>
 
 #include "Implicant.h"
+#include "VerliogConverter.h"
 
 using ProductTerm = std::set<int>;
 using BooleanExpression = std::vector<ProductTerm>;
@@ -31,8 +32,9 @@ public:
 
     static string toBinary(int num, int bits);
     static int doQMmin();
-    static void printMinimizedFunction(const std::vector<Implicant>& primes,const std::vector<int>& essential,const std::vector<ProductTerm>& minimalSolutions
-);
+    static void printMinimizedFunction(const std::vector<Implicant> &primes, const std::vector<int> &essential, const std::vector<ProductTerm> &
+                                       minimalSolutions, int nbVars
+    );
 };
 
 
